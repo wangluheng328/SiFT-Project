@@ -1,0 +1,14 @@
+Group Meeting Minutes
+
+4/10 Morning
+
+First group meeting – We discussed future meeting times, and the to-dos for each member during this weekend. We settled on 2 short meetings each week, Sunday at 3:45, Wed at 8pm.
+
+4/11 Afternoon
+
+Wes:
+1.Presented a basic implementation of DeBERTa on CoLA.
+Mark & Yash:
+1.Was working on other courses’ assignments.
+2.Change goals to “understanding SMART and implement SMART” all three of us together. We will report on Slack on 4/12 morning, sharing any knowledge gained, any questions, etc.
+
