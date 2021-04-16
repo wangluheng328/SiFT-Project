@@ -27,4 +27,10 @@ Together:
 
 Mark:
 1.Added noise to deberta, going to test it on COLA demo that was presented by Wes on 4/11.
+Together: Divide work:
+Yash: run the modified deberta on COLA
+Wes & Mark: look into SMART and see how to replicate the results
+Near future goals:
+1.
+
 
