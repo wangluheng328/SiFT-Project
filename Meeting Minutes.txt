@@ -21,3 +21,10 @@ Wes:
 1.Created a google doc for members to post questions that they are going to ask Will, TA, or Prof.Bowman
 Together:
 1.Decided meeting times with TA and Prof.Bowman in the next three days
+
+
+4/16 Afternoon (After meeting with TA angelica and Professor Bowman in the previous two days)
+
+Mark:
+1.Added noise to deberta, going to test it on COLA demo that was presented by Wes on 4/11.
+
