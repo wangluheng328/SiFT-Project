@@ -38,3 +38,12 @@ Wes & Mark: look into SMART and see how to replicate the results
 (Was a very helpful office hour)
 
 
+4/17 Evening (random)
+Wes:
+1. Wes presented his work on SMART and the bug he was getting.
+Yash:
+1. Yash reported his progress on implmenting the baseline/simple-noise version
+Together:
+1. Agreed on several office hours we all are attending in the next few days
+
+
