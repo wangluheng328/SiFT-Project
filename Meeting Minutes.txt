@@ -30,7 +30,11 @@ Mark:
 Together: Divide work:
 Yash: run the modified deberta on COLA
 Wes & Mark: look into SMART and see how to replicate the results
-Near future goals:
-1.
+
+
+4/16 Evening (office hour with TA Ilia)
+1. Ilia helped us figure our the part of SMART code which we need
+2. He also pointed us at a way of incorporating the SMART code into our code base, and how to run Jupyter notebook on Greene.
+(Was a very helpful office hour)
 
 
