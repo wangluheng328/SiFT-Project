@@ -2,7 +2,7 @@ Group Meeting Minutes
 
 4/10 Morning
 
-First group meeting – We discussed future meeting times, and the to-dos for each member during this weekend. We settled on 2 short meetings each week, Sunday at 3:45, Wed at 8pm.
+First group meeting – We discussed future meeting times, and the to-dos for each member during this weekend. We settled on 2 short meetings each week, Sunday at 3:45PM, Wed at 8pm.
 
 4/11 Afternoon
 
@@ -45,5 +45,12 @@ Yash:
 1. Yash reported his progress on implmenting the baseline/simple-noise version
 Together:
 1. Agreed on several office hours we all are attending in the next few days
+
+4/18 Afternoon
+Together:
+1. Check the deadline, and office hour times.
+2. Mark will do literature review
+3. Yash will keep doing small noise experiment on BERT and RoBERTa
+4. Wes will start writing the draft
 
 
