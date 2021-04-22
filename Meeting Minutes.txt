@@ -53,4 +53,14 @@ Together:
 3. Yash will keep doing small noise experiment on BERT and RoBERTa
 4. Wes will start writing the draft
 
+4/20 Evening (random)
+Wes:
+1. Wrote the intro section of partial draft
+2. Talked to Ilia, got some help on SMART, will look into it more.
+Mark:
+1. Read another paper about BERT, but found it not useful to include in partial draft.
+Yash:
+1. Still a few baseline models with small noise not successfully implemented on UCI, will work on those
+
+
 
