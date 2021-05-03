@@ -62,5 +62,6 @@ Mark:
 Yash:
 1. Still a few baseline models with small noise not successfully implemented on UCI, will work on those
 
-
+4/21 Evening (With Will Huang)
+Discussed the baselines. We decide to include another baseline, which is train on twitter and test on UCI with 0% or 10% further training. Very informative meeting.
 
