@@ -82,7 +82,7 @@ class SmartPerturbation():
         self.encoder_type = encoder_type 
         self.loss_map = loss_map 
         self.norm_level = norm_level > 0
-        assert len(loss_map) > 0
+        #assert len(loss_map) > 0
 
 
     def _norm_grad(self, grad, eff_grad=None, sentence_level=False):
