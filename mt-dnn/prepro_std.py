@@ -241,10 +241,10 @@ def main(args):
         logger.info("Task %s" % task)
         for split_name in task_def.split_names:
             
+            file_path = os.path.join(root, "%s_%s.tsv" % (task, split_name))
             # --------------------------------------------------------------- # 
             # Changes by Mark Kuang
             # May 4, 2021
-            file_path = os.path.join(root, "%s/%s.tsv" % (task, split_name))
             print(f"task is {task}.")
             print(f"split_name is {split_name}.")
             print(f"file_path is {file_path}.")
