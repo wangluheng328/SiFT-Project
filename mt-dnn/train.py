@@ -278,6 +278,8 @@ def main():
         device = torch.device("cpu")
 
     opt = vars(args)
+    print(opt)
+    
     # update data dir
     opt['data_dir'] = data_dir
     batch_size = args.batch_size
