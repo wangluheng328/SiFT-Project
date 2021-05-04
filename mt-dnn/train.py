@@ -318,6 +318,7 @@ def main():
     test_collater = Collater(is_train=False, encoder_type=encoder_type, max_seq_len=args.max_seq_len, do_padding=args.do_padding)
     for dataset in args.test_datasets:
         prefix = dataset.split('_')[0]
+        print(f"prefix is{prefix}.")
         task_def = task_defs.get_task_def(prefix)
         task_id = tasks[prefix]
         task_type = task_def.task_type
