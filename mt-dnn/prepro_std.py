@@ -240,7 +240,11 @@ def main(args):
         task_def = task_defs.get_task_def(task)
         logger.info("Task %s" % task)
         for split_name in task_def.split_names:
+            
             file_path = os.path.join(root, "%s_%s.tsv" % (task, split_name))
+            print(f"task is {task}.")
+            print(f"split_name is {split_name}.")
+            print(f"file_path is {file_path}.")
             if not os.path.exists(file_path):
                 logger.warning("File %s doesnot exit")
                 sys.exit(1)
