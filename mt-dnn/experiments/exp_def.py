@@ -35,6 +35,7 @@ class TaskDef(dict):
 class TaskDefs:
     def __init__(self, task_def_path):
         self._task_def_dic = yaml.safe_load(open(task_def_path))
+        print(f"self._task_def_dic is {self._task_def_dic}.")
         global_map = {}
         n_class_map = {}
         data_type_map = {}
@@ -91,6 +92,7 @@ class TaskDefs:
         self._n_class_map = n_class_map
         self._data_type_map = data_type_map
         self._task_type_map = task_type_map
+        print(f"self._task_type_map is {self._task_type_map}.")
         self._metric_meta_map = metric_meta_map
         self._split_names_map = split_names_map
         self._enable_san_map = enable_san_map
