@@ -98,7 +98,13 @@ def train_config(parser):
     parser.add_argument('--log_per_updates', type=int, default=500)
     parser.add_argument('--save_per_updates', type=int, default=10000)
     parser.add_argument('--save_per_updates_on', action='store_true')
-    parser.add_argument('--epochs', type=int, default=5)
+    
+    # ------------------------------------- # 
+    # modification of epochs
+    parser.add_argument('--epochs', type=int, default=1)
+    # parser.add_argument('--epochs', type=int, default=5)
+    # ------------------------------------- # 
+    
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--batch_size_eval', type=int, default=8)
     parser.add_argument('--optimizer', default='adamax',
