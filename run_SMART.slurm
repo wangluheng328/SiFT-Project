@@ -13,7 +13,7 @@ singularity exec --nv --overlay $SCRATCH/overlay-25GB-500K.ext3:rw /scratch/work
 source /ext3/env.sh
 conda activate
 python train.py --data_dir /scratch/yk2516/mt-dnn/data/canonical_data/bert_uncased_lower --init_checkpoint /scratch/yk2516/mt-dnn/mt_dnn_models/bert_model_base_uncased.pt --train_dataset mnli --test_dataset mnli_matched_dev --task_def experiments\glue\glue_task_def.yml --adv_train --adv_opt 1
-
+"
 
 ## TODO: Run your hyperparameter search in a singularity container. Remember to 
 ## activate your Conda environment in the container before running your Python script.
