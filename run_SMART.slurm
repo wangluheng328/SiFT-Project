@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=SMART_on_BERT
 #SBATCH --open-mode=append
-#SBATCH --output=/scratch/yk2516/SMART_slurm_results/%j_%x.out
-#SBATCH --error=/scratch/yk2516/SMART_slurm_results/%j_%x.err
+#SBATCH --output=/scratch/yk2516/mt-dnn/SMART_slurm_results/%j_%x.out
+#SBATCH --error=/scratch/yk2516/mt-dnn/SMART_slurm_results/%j_%x.err
 #SBATCH --export=ALL
 #SBATCH --time=48:00:00
 #SBATCH --gres=gpu:1
