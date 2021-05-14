@@ -1,0 +1,193 @@
+%
+% File acl2021.tex
+%
+%% Based on the style files for EMNLP 2020, which were
+%% Based on the style files for ACL 2020, which were
+%% Based on the style files for ACL 2018, NAACL 2018/19, which were
+%% Based on the style files for ACL-2015, with some improvements
+%%  taken from the NAACL-2016 style
+%% Based on the style files for ACL-2014, which were, in turn,
+%% based on ACL-2013, ACL-2012, ACL-2011, ACL-2010, ACL-IJCNLP-2009,
+%% EACL-2009, IJCNLP-2008...
+%% Based on the style files for EACL 2006 by 
+%%e.agirre@ehu.es or Sergi.Balari@uab.es
+%% and that of ACL 08 by Joakim Nivre and Noah Smith
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl2021}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{latexsym}
+% \usepackage{authblk}
+
+\renewcommand{\UrlFont}{\ttfamily\small}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+%\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+\newcommand\BibTeX{B\textsc{ib}\TeX}
+
+\title{Scale-invariant-Fine-Tuning (SiFT) for Improved Generalization}
+
+\author{Luheng (Wes) Wang \\
+  %Center for Data Science \\
+  New York University \\
+  \texttt{lw2534@nyu.edu} \\\And
+  
+  Yilun Kuang \\
+  %Center for Data Science \\
+  New York University \\
+  \texttt{yk2516@nyu.edu} \\\And
+  
+  Yash Bharti \\
+  %Center for Data Science \\
+  New York University \\
+
+  \texttt{yb1025@nyu.edu} \\}
+
+% \date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+In natural language processing, we are concerned about domain generalization of our model when it comes to real life scenarios. In addition, researchers find that adversarial training, while improves robustness, often restricts model's ability for generalization. The current state-of-the-art adversarial training algorithm SMoothness-inducing Adversarial Regularization and BRegman pRoximal poinT opTimization (SMART) algorithm \cite{jiang-etal-2020-smart} resolves this conflict. We suggest a variation of SMART, the Scale-invariant-Fine-Tuning (SiFT) which is inspired by the brief description in the DeBERTa \cite{he2021deberta} paper. 
+\end{abstract}
+
+\section{Introduction}
+
+Domain generalization is a capability of a model that allows it to be trained in one domain and perform well in another unseen domain. The concrete definition of domain varies case by case. For example, it is intuitive to believe that a generalized model which performs well on twitter sentiment classification should also gain good results on IMDB sentiment datasets.
+
+\subsection{SMART}
+
+In the SMART paper, the authors first use multi-task learning (MTL, \cite{liu2019multitask}) with SMART to train shared embeddings to regularize and prevent over-fitting. They have the regular fine-tuned model on each task  as the baseline. Then, they test the MTL model with SMART on SNLI and SciTail, which are considered out-domain tasks. The results show consistent improvement over the baselines.
+
+More specifically, SMART consists of two sections. First, it introduces smoothness-inducing adversarial training. It creates a robust error $\math{R}_s(\theta)$ which is defined to be the symmetrized KL-Divergence of $1)$ output of the model with parameters $\theta$ and input $x$, and $2)$ output of the model with the same set of parameters $\theta$ but different input $\tilde{x}$, which is the perturbed embeddings. SMART combines this robust error and the regular model error with a hyperparameter coefficient $\alpha$. Then it tries to optimize this regularized loss so that the output of the model does not change much when a small perturbation is injected, thus smoothness.
+
+Second, SMART incorporates Bregman Proximal Point Optimization to optimize the regularized loss in order to avoid aggressive update. It is done by using KL-Divergence again to monitor the change in the outputs when the parameter $\theta$ is updated in each iteration.
+
+\subsection{Motivation and Baseline Results Summary}
+
+In the DeBERTa paper, the author briefly explains how SiFT differs from SMART, and claims that a more comprehensive study is left to future work. The adversarial training procedure is the same in SiFT and SMART, while embeddings are perturbed after they are normalized in SiFT, but not before they are normalized as in SMART. We believe this is a sophisticated project idea, and we have the code base for SMART on Github. Thus, we decide to do a research on whether and by how much SiFT improves generalization. Note that in the Github repository for SMART, it also contains code base for Multi-Task Deep Neural Network (MT-DNN, \cite{liu2019multitask}). Therefore, instead of cloning the entire package, we select only relevant files and make modifications to them. Our baselines consist of multiple models and results (more to be discussed in section $4$). One of the essential findings is that when BERT and DeBERTa are trained on one domain, it performs poorly in another domain. For instance, when they are fine-tuned in domain of twitter, it performs almost as poorly as random guess in domain of IMDB.
+
+\section{Background}
+
+In recent years, pretrained language models fine-tuned for downstream tasks like BERT \cite{devlin2019bert}, RoBERTa \cite{liu2019roberta}, and DeBERTa \cite{he2021deberta} have achieved SOTA performance in various benchmarks \cite{NIPS2017_3f5ee243}. However, fine-tuning algorithms sometimes overfit the data and result in poor generalization performance \cite{jiang-etal-2020-smart}.
+
+\subsection{Random Perturbation Regularization}
+
+Classical regularization techniques augment the optimization objective with a penalization term with a hyperparameter \cite{miyato2018virtual}. From a Bayesian perspective, the addition of the regularization terms serve as a prior belief of the conditional output distribution $p(y|x)$ of the model (\citealt{bishop2006pattern,miyato2018virtual}). For the model to have good generalization performance, the conditional output distribution $p(y|x)$ of the model should be smooth relative to the conditional input $x$ \cite{miyato2018virtual}. In other words, the model should produce roughly the same output distribution $p(y|x)$ if the input data $x$ is isotropically perturbed \cite{miyato2018virtual}. 
+
+Exploiting the idea of random perturbation uniformly in all directions, it has been demonstrated that training neural network models with random noise perturbation to the input $x$ is equivalent to Tikhonov regularization \cite{6796505}.
+
+Subsequent studies by \cite{szegedy2014intriguing} and \cite{goodfellow2015explaining} show that random perturbation in the adversarial direction leads to dramatic changes in the output distribution. Algorithms like adversarial training in supervised settings are proposed to add perturbations to the most anisotropic direction in the optimization objective \cite{miyato2018virtual}.
+
+\subsection{Adversarial Training}
+
+It is suggested that adversarial examples consistent leads to misclassification in a varieties of machien learning and neural network models \cite{goodfellow2015explaining}. The adversarial training is then proposed with the optimization formulation as follows
+
+\begin{equation}
+\mathcal{L}_{\text{adv}}(x_l,\theta):=l_s[q(y|x_l),p(y|x_l+r_{\text{adv}},\theta)]\\
+\end{equation}
+\begin{equation}
+r_{\text{adv}}:=\text{argmax}_{r;||r||\leq\epsilon}\ l_s[q(y|x_l),p(y|x_l+r,\theta)]
+\end{equation}
+
+
+
+where $l_s(q,p)$ is a function that measures the difference between two distribution $q(\cdot)$ and $p(\cdot),$ $q(y|x_l)$ is the true output distribution in the supervised setting, $p(y|x_l)$ is the output distribution of the model, and $\mathcal{D}_l=\{(x_l^{(n)},y_l^{(n)})\}_{n=1}^{N_l}$ is a labeled dataset (Miyato et al., 2018). Notice that under $L_{\infty}$ norm, $r_{\text{adv}}\approx\epsilon \text{ sign}(\nabla_{x_{l}}\mathcal{D}[q(y|x_l),p(y|x_l,\theta)]),$ which is the original fast gradient sign method regularization technique proposed by \cite{goodfellow2015explaining} for adversarial trianing.
+
+By minimizing the loss $\mathcal{L}_{\text{adv}}$ with respect to the model output distribution $p(y|x_l+r_{\text{adv}},\theta)$ that is adversarially perturbated, the output distributions of the model are forced to be smooth along the anisotropic direction. Adversarial training thereby regularizes the model to be robust against adversarial perturbations \cite{miyato2018virtual}.
+
+\subsection{Virtual Adversarial Training}
+
+To extend adversarial training to semi-supervised learning domain, consider
+
+\begin{equation}
+\mathcal{L}_{\text{vadv}}(x_l,\theta):=l_s[q(y|x_*),p(y|x_*+r_{\text{qadv}},\theta)]\\
+\end{equation}
+\begin{equation}
+r_{\text{qadv}}:=\text{argmax}_{r;||r||\leq\epsilon}\ l_s[q(y|x_*),p(y|x_*+r,\theta)]
+\end{equation}
+
+where $x_*$ comes from either the labeled dataset $\mathcal{D}_l=\{(x_l^{(n)},y_l^{(n)})\}_{n=1}^{N_l}$ and the unlabeled dataset $\mathcal{D}_{ul}=\{x_{ul}^{(m)}\}_{m=1}^{N_{ul}}$ \cite{miyato2018virtual}. Given that $q(y|x_{ul})$ is not accessible in the semi-supervised setting, we can approximate $q(y|x_{ul})$ by the current estimate $p(y|x_*,\hat{\theta})$ which is a "virtual" label \cite{miyato2018virtual}. Then the averaged $\mathcal{L}_{\text{vadv}}$ can be augmented to the full loss as a regularization term. By extending adversarial training to the semi-supervised domain, we can then regularize the model against adversarial attacks.
+
+\begin{figure*}
+\begin{center}
+  \includegraphics[width=0.6\linewidth,height=1.6cm]{acl-ijcnlp2021-templates/DEBERTA.png}
+  \caption{DeBERTa Embedding Layer.}
+ \end{center}
+\end{figure*}
+
+\subsection{SMART, ALUM, SiFT}
+
+Several virtual adversarial training algorithm like SMART \cite{jiang-etal-2020-smart}, ALUM \cite{liu2020adversarial}, and SiFT \cite{he2021deberta} are proposed. SMART uses a similar adversarial regularization term with modification of symmetric KL-divergence as adversarial loss compared to the standard VAT adversarial loss. Bregman proximal point optimization is used to constrain aggressive parameter updates \cite{jiang-etal-2020-smart}. 
+
+ALUM builds on the SMART VAT training objective by replacing of the bregman proximal point optimization with a curriculum learning approach, which train the model using standard object first and then switch to virtual adversarial training \cite{liu2020adversarial}. The curriculum learning approach leads to faster training time and spare the use of the Bregman proximal point method \cite{liu2020adversarial}. 
+
+The Scale Invariant Fine-Tuning (SiFT) algorithm builds on SMART by applying perturbations to normalized embeddings \cite{he2021deberta}. It is claimed that the extra normalization applied to the word embedding improve the generalization performance of the DeBERTa and DeBERTa$_{1.5 B}$ model \cite{he2021deberta}. In this paper, we explore the SiFT algorithm, which is one variant of the VAT algorithm proposed by \cite{miyato2018virtual}. By comparing SiFT with the standard fine-tuning baseline and SMART, we can see how SiFT differs from SMART in generalization improvement. Since ALUM shares the similar loss objective with SMART with improved training technique, it would also be beneficial to see if SiFT makes substantial improvement against ALUM's leaderboard result.
+
+\section{Experiment Setup}
+
+Since SiFT Algorithm is proposed in the DeBERTa paper, we follow their work and first try to implement SiFT on DeBERTa. Second, we also incorporate BERT as our alternative model.
+
+We use the following datasets: $1)$ Twitter Hate Speech dataset\footnote{https://www.kaggle.com/\\arkhoshghalb\twitter-sentiment-analysis-hatred-speech}, $2)$ UCI Sentiment dataset \footnote{http://archive.ics.uci.edu/ml/datasets.php}, $3)$ CoLA dataset \cite{warstadt2019neural}. The usage will be detailed in section $4$.
+
+
+
+\section{Experiment Design and Baselines}
+As mentioned, SMART resolves the conflict between generalization and robustness researchers have been detecting in past years. Thus, we want to implement SiFT based on SMART. In Figure $1$, DeBERTa embedding layer is shown. SMART, along with other adversarial training in the past adds perturbation to the word embeddings at line $3$ in Figure $1$. However, SiFT adds perturbation to the output of line $4$, which are the normalized embeddings. For BERT it is the same story. We achieve this by modifying the SmartPerturbation class from SMART Github repository, and adding an instance\footnote{shown here: https://github.com/YashBit/MLLU-Class-Project/blob/main/SMART_implementation_on_BERT.ipynb} of it to our training loop. We have one bug as of now, but the overall progress is satisfying and close to success. Note that SMART only supports ranking and classification tasks. We choose to focus on classification ones.
+
+Our baseline consists of the followings. First, we fine-tune BERT and DeBERTa on COLA and with resulting Matthews Correlation Coefficient of 0.514 and 0.54 respectively. We consider this as a baseline because we will compare these baseline results with the results of the same two models with SiFT implemented. Second, we define another baseline specific to show domain generalization. We fine-tune BERT and DeBERTa on Twitter Hate Speech dataset. Then, we test directly on UCI sentiment dataset without any further training. This baseline effectively shows how generalized our model is with regard to unseen domain. In addition, we also include quantative analalysis - after fine-tuning the two models on Twitter Hate Speech dataset, we do another fine-tuning on UCI sentiment dataset, but with only 10\% of the data. This is a setup we learned from SMART paper. This shows quantitatively the adaption of the models on out-of-domain tasks. 
+\begin{table}[]
+    \centering
+    \begin{tabular}{ |c|c|c| } 
+ \hline
+   & 0\% & 10\%  \\ 
+  \hline
+ BERT &  & cell6 \\ 
+  \hline
+DeBERTa & 0.65 & 0.56 \\ 
+ \hline
+ 
+\end{tabular}
+    \caption{Horizontal axis represents how much data from UCI is used for further fine-tuning; Vertical axis represents the type of model.}
+    \label{tab:my_label}
+\end{table}
+
+\newpage
+\section{Collaboration Statement}
+Luheng (Wes) Wang:\\
+1. Provide a basic implementation of BERT and DeBERTa on CoLA\\
+2. Implement SMART on BERT for CoLA (close to success)\\
+3. Write Abstract and Section 1,3,4 (including citations) in the Partial Draft\\
+Yilun (Mark) Kuang:\\
+1. Propose a basic implementation of random noise perturbation on DeBERTa and modify experimental design\\
+2. Help Wes implement SMART on BERT for CoLA\\
+3. Write Section 2 (including citations) in the Partial Draft\\
+Yash Bharti:\\
+1. Run experiments of BERT and DeBERTa fine-tuned on Twitter HateSpeech dataset, and test on UCI.
+
+\section{Github}
+All code files for the current project can be found here:\\
+https://github.com/YashBit/MLLU-Class-Project
+
+\bibliographystyle{acl_natbib}
+\bibliography{acl2021}
+\printbibliography
+
+%\appendix
+
+
+
+\end{document}

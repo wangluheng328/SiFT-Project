@@ -65,3 +65,22 @@ Yash:
 4/21 Evening (With Will Huang)
 Discussed the baselines. We decide to include another baseline, which is train on twitter and test on UCI with 0% or 10% further training. Very informative meeting.
 
+5/1 Morning (With Jason Phang)
+First meeting with Jason, discussed how to implment perturbation.py, and Jason pointed out that we need to focus on SANBertNetwork
+
+5/3 Evening (Wes and Yash)
+Wes:
+1. Explained all codes we encoutnered and produced so far to Yash
+
+5/8 Morning (With Jason)
+Wes:
+1. Explained to Jason all the work that was done in the past week, including figuring out "opt" for SANBertNetwork, as well as finding out what criterion the authors of SMART used for classification.
+2. Explained the difficulties with SANBertNetwork
+Jason:
+1. Provided detailed pseudocode for a new method, which is to create a custom class for BERT and create two class functions: embed() and predict(), which should function just like SANBertNetwork.
+
+5/12 Morning (With Jason)
+Wes:
+1. Showed Jason the work that was done, and also presented a final bug.
+Jason:
+1. Helped debug and fix the bug.
