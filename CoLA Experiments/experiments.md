@@ -1,14 +1,10 @@
+# To record performance on each run of the four CoLA demo
 
-# BERT
-## SiFT_CoLA
-Total MCC: 0.498
-
-
-
-
-## SMART_CoLA
-Total MCC: 0.534
-
+## 5/14
+bert smart: 0.509
+bert sift: 0.514
+deberta smart: 0.576
+deberta sift: 0.572
 
 
 
