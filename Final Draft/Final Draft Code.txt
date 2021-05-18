@@ -1,0 +1,270 @@
+%
+% File acl2021.tex
+%
+%% Based on the style files for EMNLP 2020, which were
+%% Based on the style files for ACL 2020, which were
+%% Based on the style files for ACL 2018, NAACL 2018/19, which were
+%% Based on the style files for ACL-2015, with some improvements
+%%  taken from the NAACL-2016 style
+%% Based on the style files for ACL-2014, which were, in turn,
+%% based on ACL-2013, ACL-2012, ACL-2011, ACL-2010, ACL-IJCNLP-2009,
+%% EACL-2009, IJCNLP-2008...
+%% Based on the style files for EACL 2006 by 
+%%e.agirre@ehu.es or Sergi.Balari@uab.es
+%% and that of ACL 08 by Joakim Nivre and Noah Smith
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl2021}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{hyperref}
+% \usepackage{authblk}
+\usepackage{amsmath}
+
+\renewcommand{\UrlFont}{\ttfamily\small}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+%\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+\newcommand\BibTeX{B\textsc{ib}\TeX}
+
+\title{Scale-invariant-Fine-Tuning (SiFT) for Improved Generalization in Classification}
+
+\author{Luheng (Wes) Wang \thanks{First Author} \\
+  %Center for Data Science \\
+  New York University \\
+  \texttt{lw2534@nyu.edu} \\\And
+  
+  Yilun Kuang \thanks{Co-Second Author}\\
+  %Center for Data Science \\
+  New York University \\
+  \texttt{yk2516@nyu.edu} \\\And
+  
+  Yash Bharti\thanks{Co-Second Author} \\
+  %Center for Data Science \\
+  New York University \\
+
+  \texttt{yb1025@nyu.edu} \\}
+
+% \date{}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In natural language processing, we are concerned about domain generalization of our model when it comes to real life scenarios. In addition, researchers find that adversarial training, while improves robustness, often restricts model's ability for generalization. The current state-of-the-art adversarial training algorithm SMoothness-inducing Adversarial Regularization and BRegman pRoximal poinT opTimization (SMART, \cite{jiang-etal-2020-smart}) algorithm  resolves this conflict. We suggest a variation of SMART, the Scale-invariant-Fine-Tuning (SiFT) which is inspired by the brief description in the DeBERTa \cite{he2021deberta} paper. Our implementation of SiFT shows slight increase in in-domain testing results. More importantly, our classifier's performance on out-of-domain datasets is improved by approximately 10\% comparing to SMART.
+\end{abstract}
+
+\section{Introduction}
+
+Domain generalization is a capability of a model that allows it to be trained in one domain and perform well in another unseen domain. The concrete definition of domain varies case by case. For example, it is intuitive to believe that a generalized model which performs well on Twitter sentiment classification should also obtain good results on IMDB comment sentiment datasets.
+
+%\subsection{SMART}
+
+In the SMART paper, the authors first use multi-task learning (MTL, \cite{liu2019multitask}) with SMART to train shared embeddings to regularize and prevent over-fitting. They have the regular fine-tuned model on each task  as the baseline. Then, they test the MTL model with SMART on SNLI and SciTail, which are considered out-domain tasks. The results show consistent improvement over the baselines.
+
+More specifically, SMART consists of two sections. First, it introduces smoothness-inducing adversarial training. It creates a adversarial loss $\math{R}_s(\theta)$ which is defined to be the symmetrical KL-Divergence of $1)$ output of the model with parameters $\theta$ and input $x$, and $2)$ output of the model with the same set of parameters $\theta$ but different input $\tilde{x}$, which is the perturbed embeddings. SMART combines this adversarial loss and the regular model loss. Then it optimizes this combined loss so that the output of the model does not change much when a small perturbation is injected, thus smoothness. Second, SMART incorporates Bregman Proximal Point Optimization to optimize the regularized loss in order to avoid aggressive update. It is done by using symmetrical KL-Divergence again to monitor the change in the outputs when the parameter $\theta$ is updated in each iteration.
+
+%\subsection{Motivation and Baseline Results Summary}
+
+% In the DeBERTa paper, the author explains how SiFT differs from SMART, and claims that a more comprehensive study is left to future work. 
+Our research is driven by the question: if the out-of-domain datasets contain words which have very different embeddings comparing to the in-domain dataset, how do we improve the SMART algorithm's generalization stability. SiFT becomes a solution to this problem, as it contains an extra step of normalization which effectively eliminates the variance explained above. The adversarial training procedure is the same in SiFT and SMART, except that the embeddings are perturbed after they are normalized by layer in SiFT. The normalization procedure used is Layer Normalization \cite{ba2016layer}. Layer normalization deals with each token's embedding vector, which should be in the same dimension. For instance, in BERT$_{base}$ model, layer normalization manipulates the vectors which have dimension of $768$.
+
+
+
+Our implementation of SiFT splits the regular BERT and DeBERTa models into embedding layer and the rest. We process the output of the embedding layer in the following three steps: normalization, perturbation, de-normalization. Then we feed it into the rest of the model. The logits we obtain from this setup is the further used to calculate the adversarial loss. Our experiment first assures that SiFT does not hurt regular in-domain testing. Then we compare models' performances on an out-of-domain dataset with SiFT and SMART. We have proved that models with SiFT consistently outperform models with SMART on an out-of-domain dataset by approximately 10\%. This shows that by first normalizing the embeddings before perturbing them improves models' ability to generalize.
+
+
+
+
+
+
+
+
+
+
+
+% With the code base for SMART on Github, we decide to do a research on whether and by how much SiFT improves generalization. Note that in the Github repository for SMART, it also contains code base for Multi-Task Deep Neural Network (MT-DNN, \cite{liu2019multitask}). Therefore, instead of cloning the entire package, we select only relevant files and make modifications to them. Our baselines consist of multiple models and results (more to be discussed in section $4$). One of the essential findings is that when BERT and DeBERTa are trained on one domain, it performs poorly in another domain. For instance, when they are fine-tuned in domain of Twitter, it performs almost as poorly as random guess in domain of IMDB.
+
+\section{Background}
+
+In recent years, pretrained language models fine-tuned for downstream tasks like BERT \cite{devlin2019bert}, RoBERTa \cite{liu2019roberta}, and DeBERTa \cite{he2021deberta} have achieved SOTA performance in various benchmarks like GLUE \cite{wang2019glue}. However, fine-tuning algorithms sometimes overfit the data and result in poor generalization performance \cite{jiang-etal-2020-smart}.
+
+\subsection{Random Perturbation Regularization}
+
+Classical regularization techniques augment the optimization objective with a penalization term with a hyperparameter \cite{miyato2018virtual}. From a Bayesian perspective, the addition of the regularization terms serve as a prior belief of the conditional output distribution $p(y|x)$ of the model (\citealt{bishop2006pattern,miyato2018virtual}). For the model to have good generalization performance, the conditional output distribution $p(y|x)$ of the model should be smooth relative to the conditional input $x$ \cite{miyato2018virtual}. In other words, the model should produce roughly the same output distribution $p(y|x)$ if the input data $x$ is isotropically perturbed \cite{miyato2018virtual}. 
+
+Exploiting the idea of random perturbation uniformly in all directions, it has been demonstrated that training neural network models with random noise perturbation to the input $x$ is equivalent to Tikhonov regularization \cite{6796505}.
+
+Subsequent studies by \citet{szegedy2014intriguing} and \citet{goodfellow2015explaining} show that random perturbation in the adversarial direction leads to dramatic changes in the output distribution. Algorithms like adversarial training in supervised settings are proposed to add perturbations to the most anisotropic direction in the optimization objective \cite{miyato2018virtual}.
+
+\subsection{Adversarial Training}
+
+It is suggested that adversarial examples consistently leads to misclassification in a varieties of machien learning and neural network models \cite{goodfellow2015explaining}. The adversarial training is then proposed with the optimization formulation as follows
+\begin{equation}
+\mathcal{L}_{\text{adv}}(x_l,\theta):=l_s[q(y|x_l),p(y|x_l+r_{\text{adv}},\theta)]\\
+\end{equation}
+where $l_s(q,p)$ is a function that measures the difference between two distribution $q(\cdot)$ and $p(\cdot),$ $q(y|x_l)$ is the true output distribution in the supervised setting, $p(y|x_l)$ is the output distribution of the model, and $\mathcal{D}_l=\{(x_l^{(n)},y_l^{(n)})\}_{n=1}^{N_l}$ is a labeled dataset (Miyato et al., 2018). $r_{\text{adv}}$ is the noise in the adversarial direction that maximize the loss $l_s$ between two distributions. Notice that under $L_{\infty}$ norm, $r_{\text{adv}}\approx\epsilon \text{ sign}(\nabla_{x_{l}}\mathcal{D}[q(y|x_l),p(y|x_l,\theta)]),$ which is the original fast gradient sign method regularization technique proposed by \cite{goodfellow2015explaining} for adversarial trianing.
+
+By minimizing the loss $\mathcal{L}_{\text{adv}}$ with respect to the model output distribution $p(y|x_l+r_{\text{adv}},\theta)$ that is adversarially perturbated, the output distributions of the model are forced to be smooth along the anisotropic direction. Adversarial training thereby regularizes the model to be robust against adversarial perturbations \cite{miyato2018virtual}.
+
+In addition, adversarial training in NLP also improves model generalization \cite{miyato2017adversarial,cheng2019robust}. Some prominent adversarial training algorithms like FreeLB \cite{zhu2020freelb} uses projected gradient descent (PGD) to update the noise perturbations that results in more invariance in the embedding space and hence better model generalization. CLAPS \cite{lee2021contrastive} is also an example of adversarial contrastive learning that use adversarial inputs as negative examples, which also leads to improved generalization. 
+
+\subsection{Virtual Adversarial Training}
+
+To extend adversarial training to semi-supervised learning domain, consider
+\begin{equation}
+\mathcal{L}_{\text{vadv}}(x_l,\theta):=l_s[q(y|x_*),p(y|x_*+r_{\text{qadv}},\theta)]\\
+\end{equation}
+where $x_*$ comes from either the labeled dataset $\mathcal{D}_l=\{(x_l^{(n)},y_l^{(n)})\}_{n=1}^{N_l}$ and the unlabeled dataset $\mathcal{D}_{ul}=\{x_{ul}^{(m)}\}_{m=1}^{N_{ul}}$ \cite{miyato2018virtual}. Given that $q(y|x_{ul})$ is not accessible in the semi-supervised setting, we can approximate $q(y|x_{ul})$ by the current estimate $p(y|x_*,\hat{\theta})$ which is a "virtual" label \cite{miyato2018virtual}. Then the averaged $\mathcal{L}_{\text{vadv}}$ can be augmented to the full loss as a regularization term. By extending adversarial training to the semi-supervised domain, we can then regularize the model against adversarial attacks.
+
+\subsection{SMART, ALUM, SiFT}
+
+Several virtual adversarial training algorithm like SMART \cite{jiang-etal-2020-smart}, ALUM \cite{liu2020adversarial}, and SiFT \cite{he2021deberta} are proposed. SMART uses a similar adversarial regularization term with modification of symmetric KL-divergence as adversarial loss compared to the standard VAT adversarial loss. Bregman proximal point optimization is used to constrain aggressive parameter updates \cite{jiang-etal-2020-smart}. 
+
+ALUM builds on the SMART VAT training objective by replacing of the bregman proximal point optimization with a curriculum learning approach, which train the model using standard object first and then switch to virtual adversarial training \cite{liu2020adversarial}. The curriculum learning approach leads to faster training time and spare the use of the Bregman proximal point method \cite{liu2020adversarial}. 
+
+The Scale Invariant Fine-Tuning (SiFT) algorithm builds on SMART by applying perturbations to normalized embeddings \cite{he2021deberta}. It is claimed that the extra normalization applied to the word embedding improve the generalization performance of the DeBERTa and DeBERTa$_{1.5 B}$ model \cite{he2021deberta}. In this paper, we explore the SiFT algorithm, which is one variant of the VAT algorithm proposed by \cite{miyato2018virtual}. By comparing SiFT with the standard fine-tuning baseline and SMART, we can see how SiFT differs from SMART in generalization improvement.
+
+\section{Method}
+% We augment the regular cross entropy loss $\mathcal{L}(\theta)$ in the fine-tuning training loop with the Smoothness-inducing adversarial regularizer $\mathcal{R}_s(\theta)$ defined as
+% \begin{equation}
+% \mathcal{R}_s(\theta)=\frac{1}{n}\sum_{i=1}^{n}\max_{||\tilde{x_i}-x_i||\leq\epsilon} l_s(f(\tilde{x_i};\theta),f(x_i;\theta)),
+% \end{equation}
+% where $f(\cdot)$ is the model, $x_i$ is the word embedding, $\tilde x_i$ is the perturbed word embedding, $\theta$ is the parameter, and $l_s$ is the symmetrized KL divergence loss \cite{jiang-etal-2020-smart}. For SiFT, the adversarial prediction $f(\tilde x_i;\theta)$ takes in the normalized word embeddings $\text{LayerNorm}(x_i)$ and input the perturbed normalized word embedding to the model $f(\cdot)$. For SMART, the word embedding is directly perturbed and input to the model without normalization.
+
+% The Smoothness-inducing adversarial Regularizer $\mathcal{R}_s(\theta)$ is added to the regular cross entropy loss $\mathcal{L}(\theta)$ for backpropagation. By minimizing the combined loss, the model is adversarially trained with the step of normalization in the SiFT compared to unnormalized word embeddings in SMART.
+
+As illustrated in the introduction, we make use of the output embeddings of the embedding layer in the model. We record the mean and standard deviation for each embedding during normalization step. After they are normalized, we move to the perturbation step, which follows the same structure as discussed in the SMART paper. 
+
+First, we initialize and add a vector of random noise with mean $0$ and standard deviation $0.01$ to the embeddings. Then we follow the same strategy as SMART to update the noise, which is to minimize the following $\mathcal{R}_s$.
+\begin{equation}\label{e3}
+\mathcal{R}_s(\theta)=\frac{1}{n}\sum_{i=1}^{n}\max_{||\tilde{x_i}-x_i||\leq\epsilon} l_s(f(\tilde{x_i};\theta),f(x_i;\theta)),
+\end{equation}
+where $f(\cdot)$ is the model, $x_i$ is the word embedding, $\tilde x_i$ is the normalized perturbed word embeddings, $\theta$ is the parameter, and $l_s$ is the symmetrized KL divergence loss. This measures the local Lipschitz continuity, or in other words induces smoothness. 
+
+Finally, we use the mean and standard deviation we stored to de-normalize the embeddings. This is to maintain consistency in later steps when we compare the adversarial logits with the regular logits which are obtained from non-normalized embeddings. Then we feed these de-normalized embeddings into the rest of the models, for which the model outputs adversarial logits. Then we use the equation \ref{e3} again to calculate the adversarial loss, and take the sum of it and the regular training loss for parameter update.
+
+\section{Data}
+
+We use the following datasets: $1)$ Twitter Hate Speech dataset\footnote{\url{https://www.kaggle.com/arkhoshghalb\Twitter-sentiment-analysis-hatred-speech}}, $2)$ UCI Sentiment dataset \footnote{\url{http://archive.ics.uci.edu/ml/datasets.php}}, $3)$ CoLA dataset \cite{warstadt2019neural}. The usage will be detailed in Section \ref{ex}.
+
+\section{Experiment Design and Baselines}\label{ex}
+% As mentioned, adversarial training in NLP resolves the conflict between generalization and robustness \cite{miyato2017adversarial,cheng2019robust}. We expect that SMART can also improve model generalization while preserving the robustness against adversarial examples. Thus, we implemented SiFT based on SMART. SMART, along with other adversarial training in the past adds perturbation to the word embeddings at line $3$ in Figure $1$. However, SiFT adds perturbation to the output of line $4$, which are the normalized embeddings. For BERT it is the same story. We achieve this by modifying the SmartPerturbation class from SMART Github repository, and adding an instance
+
+% \footnote{shown here: https://github.com/YashBit/MLLU-Class-Project/blob/main/SMART_implementation_on_BERT.ipynb} of it to our training loop. We have one bug as of now, but the overall progress is satisfying and close to success. Note that SMART only supports ranking and classification tasks. We choose to focus on classification ones.
+We incorporated both DeBERTa and BERT. We test on DeBERTa because SiFT was originally proposed by the DeBERTa authors. We also test on BERT for generalization purpose. 
+
+First, we fine-tune BERT and DeBERTa on CoLA and with resulting Matthews Correlation Coefficient of 0.52 and 0.54 respectively. We record these results to assure that our SiFT implementation does not hurt in-domain training and testing. This is shown by comparing to the models' performances on CoLA after SiFT is implemented. If the results do not vary much, then we conclude SiFT does not affect in-domain training and testing. 
+
+Second, we define our baseline to be the following so as to show domain generalization. We fine-tune BERT and DeBERTa on Twitter Hate Speech dataset. 
+% This baseline effectively shows how generalized our model is with regard to unseen domain. 
+In addition, after fine-tuning the two models on Twitter Hate Speech data set, we do another fine-tuning on UCI sentiment dataset, but with only 10\% of the data. This is a setup similar to that of the SMART paper. This shows quantitatively the adaption of the models on out-of-domain tasks. Finally, we test on the remaining UCI dataset to obtain a testing performance.
+
+We implement both SiFT and SMART on both BERT and DeBERTa, and follow the strategy described above. We prove that the out-of-domain performance is improved by SiFT comparing to SMART.
+
+\begin{table}[]\label{t1}
+    \centering
+    \begin{tabular}{ |c|c|c| } 
+ \hline
+      Model + Algorithm & CoLA & UCI 10\%  \\ 
+  \hline
+ Plain BERT & 0.52 & 0.55 \\ 
+  \hline
+BERT w SMART & 0.51 & 0.70 \\ 
+  \hline
+BERT w SiFT & 0.53 & 0.80 \\ 
+
+
+ \hline
+\end{tabular}
+    \caption{The middle column shows the performance of each model + corresponding algorithm (if any) on CoLA dataset. The rightmost column shows the performance of each model + corresponding algorithm (if any) on the remaining 90\% of the UCI dataset, after it is trained on the entire Twitter dataset as well as 10\% of the UCI dataset.}
+    \label{t1}
+\end{table}
+
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{ |c|c|c| } 
+ \hline
+      Model + Algorithm & CoLA & UCI 10\%  \\ 
+  \hline
+ Plain DeBERTa & 0.54 & 0.56 \\ 
+  \hline
+DeBERTa w SMART & 0.56 & 0.80 \\ 
+  \hline
+DeBERTa w SiFT & 0.56 & 0.91 \\ 
+
+
+ \hline
+\end{tabular}
+    \caption{Table structure is the same as Table \ref{t1}, except this table is for DeBERTa.}
+    \label{t2}
+\end{table}
+ 
+\section{Testing Results \& Analysis}
+We do multiple runs and record the average performance, which is shown in Table \ref{t1} and \ref{t2}. First, the performances of both models on CoLA with SiFT implemented remain close to the performances of the plain models. We conclude that SiFT is not affecting the model's in-domain performance. 
+
+Then we inspect the performance on UCI dataset to analyze the out-domain performance. The numbers under "UCI 10\% " in Table \ref{t1} and \ref{t2} refer to the testing performances on the remaining 90\% data from UCI dataset after the model is fine-tuned on the Twitter dataset and 10\% of the UCI dataset. Note that the models with the SIFT algorithm outperform the models with the SMART algorithm and the plain models. For BERT, SiFT raises the performance from $0.70$ of SMART to $0.80$. For DeBERTa, it raises the performance from $0.80$ of SMART to $0.91$. Since the difference is significant and the results are generated upon multiple runs, we can safely conclude that SiFT has outperformed SMART in classification 
+
+
+ \section{Conclusion}
+
+With the results we obtained from our experiments, we can safely conclude the significance of SiFT, that it improves models' capability to generalize. Models trained with SiFT algorithm will perform better on domains they are not familiar with. However, there are limitations to our experiments.
+Our experiments were on three specific datasets. Our improvement in results can be confounded by the underlying distribution of these datasets. In addition, we have only tested the algorithm on two specific types of classification, while there are more to be explored, such as semantic entailment recognition. We leave the work of testing on more domain of data to the future scholars.
+
+
+
+
+\newpage
+\section{Ethical Considerations}
+
+The SiFT algorithm can be used in models other than BERT and DeBERTa, such as RoBERTa and ALBERT. In addition, SiFT can be incorporated into other types of tasks beyond classification, such as ranking, text generation, and even recommendation system with further modification. However, the usage of SiFT might lead to both benefits and risks. On the bright side, data leakage should no longer be necessary when models using SiFT achieves better generalization performance that avoids the necessity for companies to acquire more data illegally. Big tech companies can train the model on their own data generated by user inputs and then used the model elsewhere publicly. In addition, SiFT helps improve the stability and overall performance of a model on out-of-domain data. Thus, SiFT might effectively restrain the possibilities for data privacy breaching for some vicious institutions.
+
+On the other hand, SiFT can enhance institution's ability to obtain information in areas they previously were blocked from. For instance, consider a domain of data which this institution originally had very limited access to. Now with SiFT the institution can fine-tune their model with very little data and achieve a decent functionality on that domain. In real life scenarios such as e-commerce platforms, SiFT with its normalization step minimizes the gap between different domains of data, so that malicious users might be able to follow such strategy to get relatively accurate portraits of users from rival e-commerce platforms. Another potential negative impact of SiFT is that it might reduce researcher's interest and need for acquiring detailed data, since embeddings will be normalized and perturbed. The level of detail in data might be less important with SiFT implemented, which has unpredictable influence on data mining.
+
+
+
+
+\section{Collaboration Statement}
+
+\item 1. Luheng (Wes) Wang:\\
+Implementation of SiFT and SMART on BERT; \\
+Implementation of SiFT and SMART on DeBERTa;\\
+Experiment of SMART and SiFT on DeBERTa ;\\
+Write-up of method and experiment
+
+\item 2. Yilun Kuang:\\ Implementation of SiFT and SMART on BERT;\\
+Literature review for adversarial training.
+
+\item 3. Yash Bharti: \\Experiment of SMART and SiFT on UCI with BERT;\\
+Experiment of SMART and SiFT on CoLA with BERT;\\
+Write-up of experiment results
+
+\section{Github}
+All code files for the current project can be found here:\\
+\url{https://github.com/wangluheng328/SiFT-Project}
+
+
+\section{Acknowledgements}
+We thank Jason Phang and Will Huang for their help on our project.
+\bibliographystyle{acl_natbib}
+\bibliography{acl2021}
+\printbibliography
+
+%\appendix
+
+
+
+\end{document}
